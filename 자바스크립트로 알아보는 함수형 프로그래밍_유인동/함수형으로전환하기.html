@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=script, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="./js/_.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <script>
+    let users=[
+        {id:1, name:"ID", age: 36},
+        {id:2, name:"BJ", age: 32},
+        {id:3, name:"JM", age: 32},
+        {id:4, name:"PJ", age: 27},
+        {id:5, name:"HA", age: 25},
+        {id:6, name:"JE", age: 26},
+        {id:7, name:"JI", age: 31},
+        {id:8, name:"MP", age: 23},
+    ];
+
+//1. 명령형 코드 - 일반적인 코드
+    //1. 30세 이상인 users를 거른다.
+    let temp_users = [];
+    for(let i = 0; i<users.length; i++){
+        if(users[i].age >= 30){
+           temp_users.push(users[i]);
+        }   
+    }
+    console.log(temp_users);
+
+    //2. 30세 이상인 users의 names를 수집한다.
+    let names = [];
+    for(let i = 0; i<temp_users.length; i++){
+        names.push(temp_users[i].name);
+    }
+    console.log(names);
+    //3. 30세 미만인 users를 거른다
+    let low_temp_users = [];
+    for(let i=0; i<users.length; i++){
+        if(users[i].age < 30){
+            low_temp_users.push(users[i]);
+        }
+    }
+    console.log(low_temp_users);
+    //4. 30세 미만인 users의 ages를 수집한다.
+    let ages = [];
+    for(let i = 0 ; i < low_temp_users.length ; i++){
+        ages.push(low_temp_users[i].age);
+    }
+    console.log(ages);
+
+
+//2. _filter, _map 으로 리펙토링 - 함수형으로(응용형함수,컬렉션 다룸) 중복을 제거하고 함수형프로그래밍의 컨셉을 알아보자.
+    //응용형 함수(고차함수 : 함수를 받는 함수) : 함수가 함수를 받아서 원하는 시점에 해당하는 함수가 알고있는 인자를 적용하는 함수.
+    function _filter(users, predi){//원래있는값 변경 x 변형된 새로운값 리턴 o
+        let new_list = [];
+        for(let i = 0; i<users.length; i++){
+            // if(users[i].age >= 30){ // 중복을 제거할 때 함수를 이용하여 추상화 시킴 이것이 함수형프로그래밍. 다른 함수에 완전히 위임시켜 어떤 조건일때 필터링 할 것인가.
+            if(predi(users[i])){
+                new_list.push(users[i]);
+            }
+            // }   
+        }
+        return new_list; // console.log 는 외부에 영향을 주는 부수효과임! 없애줘야돼!
+    }
+
+    // console.log( _filter([1,2,3,4,] , function(num){ return num%2;}));
+    // console.log( _filter([1,2,3,4,] , function(num){ return !(num%2);})); //users만의 코드가 아닌 다른 함수도 필터링 할수 있는 코드가 됨! 다형성 up 재사용성 up
+
+    function _map(list, mapper){
+        let new_list = [];
+        for(let i = 0; i<list.length; i++){
+            // names.push(list[i].name);
+            new_list.push(mapper(list[i])); // 데이터가 보이지 않음 (장점)
+        }
+        return new_list;
+    }
+
+    let over_30 = _filter(users, function(user){return user.age >= 30;});
+    console.log(over_30);
+    let new_names = _map(over_30, function(user){return user.name;});
+    console.log(new_names);
+
+    let under_30 = _filter(users, function(user){return user.age < 30;});
+    console.log(under_30);
+    let new_ages = _map(under_30, function(user){return user.age;});
+    console.log(new_ages);
+
+    // console.log(_map([1, 2, 3],function(num){return num*2;})); //어떥값이나 맵핑 가능
+    //FP 는 대입문 많이 사용 x => 원래 값을 만들어 놓고 문장을 내려가면서 변형해가는것이 아니라 함수를 통과해서 한번에 값을 만들어가는 프로그래밍!.. 함수를 중첩!
+
+    console.log( _map( 
+        _filter(users, function(user){return user.age >= 30;}), 
+        function(user){return user.name;} )); // 중간에 데이터값 변형 불가. 좀더 안정성있음
+
+    console.log( _map( 
+        _filter(users, function(user){return user.age < 30;}), 
+        function(user){return user.age;} ));
+
+
+
+//3. each
+//외부다형성
+    //1. array_like, arguments, document.querySelectorAll()
+
+console.log([1, 2, 3].map(function(val){ return val*2;})); //method 임. 객체지향프로그래밍. 객체상태에 따라 결과가 달라짐.
+console.log([1, 2, 3, 4].filter(function(val){return val%2;}));
+//document.querySelectorAll 은 array_like 라 map 과 filter 사용 할 수 없음~
+// console.log(
+//     document.querySelectorAll('*').map(function(node){return node.nodeName;}));
+console.log( document.querySelectorAll('*') );
+console.log(
+    _map(document.querySelectorAll('*'), function(node){
+        return node.nodeName;
+    })
+)
+
+// 3. 내부 다형성  
+    // 1. predi, iter, mapper
+
+
+// 4. 커링 : 함수와 인자를 다루는 기법. 함수의 인자가 다 채워지면 함수를 실행. 
+// 자바스크립트에서 원래 적용이 되지 않지만 일급함수가 지원되고 평가시점을 정할 수 있기 때문에 만들 수 있다.
+    // 1. _curry, curryr
+    function _curry(fn){
+        return function(a,b){
+            return arguments.length == 2? fn(a,b) : function(b){ return fn(a,b); }
+        }
+    }
+    
+    function _curryr(fn){
+        return function(a,b){
+            return arguments.length == 2? fn(a,b) : function(b){return fn(b,a);}; // 먼저 들어온게 a로..
+        }
+    }
+
+    let add = _curry(function(a,b){
+        return a+b;
+    })
+
+    let add10 = add(10);
+    console.log(add10(5)); //15
+    console.log(add(1,2))
+
+    let sub = _curryr(function(a,b){
+        return a-b; 
+    })
+    console.log(sub(10,5));
+    let sub10 = sub(10);
+    console.log(sub10(5)); 
+
+    // 2. _get 만들어 좀 더 간단하게 하기
+    function _get(obj, key){
+        return obj == null ? undefined : obj[key];
+    }
+
+    let user1 = users[0];
+    console.log(_get(users[10], 'name')); // undefined
+    console.log(users[10].name); //error 
+
+
+    </script>
+</body>
+</html>
