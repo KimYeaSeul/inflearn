@@ -20,24 +20,6 @@
         {id:8, name:"MP", age: 23},
     ];
 
-    // function _filter(users, predi){
-    //     let new_list = [];
-    //     for(let i=0; i<users.length; i++){
-    //         if(predi(users[i])){
-    //             new_list.push(users[i]);
-    //         }
-    //     }
-    //     return new_list;
-    // }
-
-    // function _map(list, mapper){
-    //     let new_list=[];
-    //     for(let i=0; i<list.length; i++){
-    //         new_list.push(mapper(list[i]));
-    //     }
-    //     return new_list;
-    // }
-
     let over_30 = _filter(users, user => user.age > 30);
 
     let new_names = _map(over_30, user => user.name);
@@ -53,17 +35,7 @@
 // 4. 커링 : 함수와 인자를 다루는 기법. 함수의 인자가 다 채워지면 함수를 실행. 
 // 자바스크립트에서 원래 적용이 되지 않지만 일급함수가 지원되고 평가시점을 정할 수 있기 때문에 만들 수 있다.
     // 1. _curry, curryr
-    function _curry(fn){
-        return function(a,b){
-            return arguments.length == 2? fn(a,b) : function(b){ return fn(a,b); }
-        }
-    }
-    
-    function _curryr(fn){
-        return function(a,b){
-            return arguments.length == 2? fn(a,b) : function(b){return fn(b,a);};
-        }
-    }
+
 
     let add = _curry(function(a,b){
         return a+b;
@@ -74,15 +46,46 @@
     })
    
     // 2. _get 만들어 좀 더 간단하게 하기
-    let _get = _curryr(function(obj, key){
-        return obj == null ? undefined : obj[key];
-    }
-);
+    
     let user1 = users[0];
-    console.log(user1.name);
-    console.log(_get(user1, 'name')); // undefined
-    console.log(_get('name')(user1)); //error 
+    
+    // 4. _reduce 만들기 : 축약함수. 
+    let slice = Array.prototype.slice;
+    function _rest(list, num){
+        return slice.call(list, num || 1 );
+    }
+    function _reduce (list , iter, memo){
+        if(arguments.length == 2 ){
+            memo = list[0];
+            list = _rest(list);
+        }
+        _each(list, function(val){
+            memo = iter(memo, val);
+        });
+        return memo;
+    }
+//5. 파이프라인 만들기
+    // 1. _pipe 함수를 리턴해주는 함수.. 함수2개 실행. 함수만 다루는 함수
+    function _pipe(){
+        let fns = arguments;
+        return function(arg){
+            return _reduce(fns, function(arg, fn){
 
+            }, arg )
+        }
+    }
+
+    let f1 = _pipe(
+        function(a) { return a+1; },
+        function(a) { return a*2; });
+    console.log( f1(1) );
+
+    //2. _go(인자, 함수...) 즉시실행되는..
+    _go(1,
+    function(a) {return a+1;},
+    function(a) {return a+1;},
+    function(a) {return a+1;},
+    console.log)
     </script>
 </body>
 </html>
